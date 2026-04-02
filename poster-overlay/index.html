@@ -253,11 +253,11 @@
               <div class="ct-toggle-row">
                 <span class="ct-toggle-label">Drop Shadow</span>
                 <label class="toggle-switch">
-                  <input type="checkbox" id="designer-shadow-toggle" />
+                  <input type="checkbox" id="designer-shadow-toggle" checked />
                   <span class="toggle-slider"></span>
                 </label>
               </div>
-              <div id="designer-shadow-group" style="display:none">
+              <div id="designer-shadow-group" style="display:block">
                 <div class="ct-slider-block">
                   <div class="ct-slider-label">
                     <span class="ct-row-label">Blur</span>
@@ -372,10 +372,10 @@
             <div id="network-logo-color-pickr"></div>
           </div>
 
-          <!-- ── Season Label group ── -->
+          <!-- ── Text Label group ── -->
           <div class="ct-group" id="season-label-card">
             <div class="ct-group-header">
-              <span class="ct-group-title">Season Label</span>
+              <span class="ct-group-title">Text Label</span>
               <label class="toggle-switch">
                 <input type="checkbox" id="season-label-toggle" />
                 <span class="toggle-slider"></span>
@@ -385,7 +385,7 @@
               <div class="ct-slider-label">
                 <span class="ct-row-label">Label Text</span>
               </div>
-              <input type="text" id="season-label-text" class="ct-text-input" value="Season 1" placeholder="e.g. Season 1" />
+              <input type="text" id="season-label-text" class="ct-text-input" value="Season 1" placeholder="e.g. Season 1, Collection" />
             </div>
             <div class="ct-slider-block">
               <div class="ct-slider-label">
@@ -393,7 +393,7 @@
               </div>
               <select id="season-label-font" class="ct-text-input">
                 <option value="Bebas Neue">Bebas Neue</option>
-                <option value="Exo 2">Exo 2</option>
+                <option value="Exo 2" selected>Exo 2</option>
                 <option value="Anton">Anton</option>
                 <option value="Arial Black">Arial Black</option>
                 <option value="Georgia">Georgia</option>
@@ -403,33 +403,33 @@
             <div class="ct-slider-block">
               <div class="ct-slider-label">
                 <span class="ct-row-label">Vertical</span>
-                <span class="ct-row-val" id="season-label-y-val">91%</span>
+                <span class="ct-row-val" id="season-label-y-val">94.5%</span>
               </div>
               <div class="ct-slider-row">
                 <button type="button" class="sidebar-range-btn" id="season-label-y-dec" tabindex="-1">&#8722;</button>
-                <input type="range" id="season-label-y" min="0" max="100" step="0.5" value="91" class="designer-slider" />
+                <input type="range" id="season-label-y" min="0" max="100" step="0.5" value="94.5" class="designer-slider" />
                 <button type="button" class="sidebar-range-btn" id="season-label-y-inc" tabindex="-1">+</button>
               </div>
             </div>
             <div class="ct-slider-block">
               <div class="ct-slider-label">
                 <span class="ct-row-label">Size</span>
-                <span class="ct-row-val" id="season-label-size-val">60px</span>
+                <span class="ct-row-val" id="season-label-size-val">34px</span>
               </div>
               <div class="ct-slider-row">
                 <button type="button" class="sidebar-range-btn" id="season-label-size-dec" tabindex="-1">&#8722;</button>
-                <input type="range" id="season-label-size" min="10" max="300" step="2" value="60" class="designer-slider" />
+                <input type="range" id="season-label-size" min="10" max="300" step="2" value="34" class="designer-slider" />
                 <button type="button" class="sidebar-range-btn" id="season-label-size-inc" tabindex="-1">+</button>
               </div>
             </div>
             <div class="ct-slider-block">
               <div class="ct-slider-label">
                 <span class="ct-row-label">Spacing</span>
-                <span class="ct-row-val" id="season-label-spacing-val">0px</span>
+                <span class="ct-row-val" id="season-label-spacing-val">10px</span>
               </div>
               <div class="ct-slider-row">
                 <button type="button" class="sidebar-range-btn" id="season-label-spacing-dec" tabindex="-1">&#8722;</button>
-                <input type="range" id="season-label-spacing" min="-10" max="60" step="1" value="0" class="designer-slider" />
+                <input type="range" id="season-label-spacing" min="-10" max="60" step="1" value="10" class="designer-slider" />
                 <button type="button" class="sidebar-range-btn" id="season-label-spacing-inc" tabindex="-1">+</button>
               </div>
             </div>
@@ -560,15 +560,15 @@
 
                 <!-- SEASON LABEL (TV only) -->
                 <div class="po-eb-group" id="eb-season-group">
-                  <span class="po-eb-group-label">Season</span>
-                  <button class="po-eb-toggle-btn" id="eb-season-label-toggle" data-tooltip="Toggle season label" aria-pressed="false">Off</button>
-                  <input type="text" class="po-eb-text" id="eb-season-label-text" placeholder="e.g. Season 1" data-tooltip="Season label text" />
+                  <span class="po-eb-group-label">Text Label</span>
+                  <button class="po-eb-toggle-btn" id="eb-season-label-toggle" data-tooltip="Toggle text label" aria-pressed="false">Off</button>
+                  <input type="text" class="po-eb-text" id="eb-season-label-text" placeholder="e.g. Season 1, Collection" data-tooltip="Label text" />
                   <div class="po-eb-divider"></div>
                   <span class="po-eb-label">Y</span>
                   <button class="po-eb-range-btn" id="eb-season-y-dec">−</button>
-                  <input type="range" class="po-eb-slider" id="eb-season-y" min="0" max="100" step="0.5" value="91" data-tooltip="Label vertical position" />
+                  <input type="range" class="po-eb-slider" id="eb-season-y" min="0" max="100" step="0.5" value="94.5" data-tooltip="Label vertical position" />
                   <button class="po-eb-range-btn" id="eb-season-y-inc">+</button>
-                  <span class="po-eb-val" id="eb-season-y-val">91%</span>
+                  <span class="po-eb-val" id="eb-season-y-val">94.5%</span>
                 </div>
 
                 <div class="po-eb-sep" id="eb-season-sep"></div>
@@ -796,7 +796,7 @@
       document.addEventListener("DOMContentLoaded", function() {
         // Grab the mobile content type buttons
         const mobileBtns = document.querySelectorAll(".mobile-tab-content .media-type-btn");
-        
+
         // Add direct event handlers to each button
         mobileBtns.forEach(btn => {
           btn.addEventListener("click", function() {
@@ -807,13 +807,13 @@
               b.style.filter = "grayscale(50%)";
               b.style.background = "transparent";
             });
-            
+
             // Then style the clicked button
             btn.classList.add("active");
             btn.style.background = "linear-gradient(to right, #00bfa5, #8e24aa)";
             btn.style.opacity = "1";
             btn.style.filter = "none";
-            
+
             // Sync with main UI buttons
             const type = btn.dataset.type;
             const desktopBtn = document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`);

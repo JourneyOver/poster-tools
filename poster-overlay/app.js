@@ -272,7 +272,7 @@ let designerLogoUrl     = '';   // URL of the currently loaded clearlogo (persis
 let designerLogoX       = 0;
 let designerLogoY       = 55;
 let designerLogoScale   = 1.0;
-let designerShadowEnabled = false;
+let designerShadowEnabled = true;
 let designerShadowBlur  = 20;
 let currentDesignerId   = null;
 let currentDesignerType = 'movie';
@@ -287,11 +287,11 @@ let seasonSuiteData   = null;   // { showId, seasons: [...] }
 let activeSeasonNum   = null;   // currently highlighted season number (null = base)
 let seasonLabelEnabled  = false;
 let seasonLabelText     = '';
-let seasonLabelFontSize = 60;
+let seasonLabelFontSize = 34;
 let seasonLabelColor    = '#ffffff';
-let seasonLabelYPct     = 91;
-let seasonLabelFont     = 'Bebas Neue';
-let seasonLabelSpacing  = 0;   // % of canvas height
+let seasonLabelYPct     = 94.5;
+let seasonLabelFont     = 'Exo 2';
+let seasonLabelSpacing  = 10;   // % of canvas height
 let showBasePosterPath  = null; // TMDB poster_path for the base show
 let baseShowImage       = null; // stored Image for restoring base poster
 let seasonSavedImages   = new Map(); // key (seasonNum | 'base') → { img, labelText, labelColor, logoColor }
@@ -331,7 +331,7 @@ function drawGuidelinesBackdrop() {
 function showLoadingOverlay(title, message) {
   // Remove any existing overlay
   hideLoadingOverlay();
-  
+
   // Create overlay
   loadingOverlay = document.createElement("div");
   loadingOverlay.className = "loading-overlay";
@@ -347,7 +347,7 @@ function showLoadingOverlay(title, message) {
   loadingOverlay.style.justifyContent = "center";
   loadingOverlay.style.zIndex = "9999";
   loadingOverlay.style.backdropFilter = "blur(4px)";
-  
+
   // Create modal container
   const modalContainer = document.createElement("div");
   modalContainer.className = "custom-modal loading-modal";
@@ -360,7 +360,7 @@ function showLoadingOverlay(title, message) {
   modalContainer.style.flexDirection = "column";
   modalContainer.style.alignItems = "center";
   modalContainer.style.textAlign = "center";
-  
+
   // Create spinner
   const spinner = document.createElement("div");
   spinner.className = "loading-spinner-large";
@@ -371,7 +371,7 @@ function showLoadingOverlay(title, message) {
   spinner.style.height = "50px";
   spinner.style.animation = "spin 1s linear infinite";
   spinner.style.marginBottom = "15px";
-  
+
   // Add spinner animation if it doesn't exist
   if (!document.getElementById("spinner-style")) {
     const style = document.createElement("style");
@@ -379,7 +379,7 @@ function showLoadingOverlay(title, message) {
     style.textContent = "@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }";
     document.head.appendChild(style);
   }
-  
+
   // Create title element
   const titleEl = document.createElement("h3");
   titleEl.id = "loading-title";
@@ -387,7 +387,7 @@ function showLoadingOverlay(title, message) {
   titleEl.style.color = "white";
   titleEl.style.margin = "0 0 10px 0";
   titleEl.style.fontFamily = "Gabarito, sans-serif";
-  
+
   // Create message element
   const messageEl = document.createElement("p");
   messageEl.id = "loading-message";
@@ -395,7 +395,7 @@ function showLoadingOverlay(title, message) {
   messageEl.style.color = "white";
   messageEl.style.margin = "0 0 15px 0";
   messageEl.style.fontFamily = "Gabarito, sans-serif";
-  
+
   // Create progress container
   const progressContainer = document.createElement("div");
   progressContainer.style.width = "100%";
@@ -404,7 +404,7 @@ function showLoadingOverlay(title, message) {
   progressContainer.style.borderRadius = "3px";
   progressContainer.style.margin = "15px 0";
   progressContainer.style.overflow = "hidden";
-  
+
   // Create progress bar
   loadingProgressBar = document.createElement("div");
   loadingProgressBar.id = "loading-progress-bar";
@@ -413,7 +413,7 @@ function showLoadingOverlay(title, message) {
   loadingProgressBar.style.background = "linear-gradient(90deg, #00bfa5, #6a11cb)";
   loadingProgressBar.style.transition = "width 0.3s ease";
   loadingProgressBar.style.borderRadius = "3px";
-  
+
   // Create details text
   loadingDetailsText = document.createElement("p");
   loadingDetailsText.id = "loading-details";
@@ -422,7 +422,7 @@ function showLoadingOverlay(title, message) {
   loadingDetailsText.style.fontSize = "14px";
   loadingDetailsText.style.fontFamily = "Gabarito, sans-serif";
   loadingDetailsText.style.margin = "10px 0 0 0";
-  
+
   // Assemble all components
   progressContainer.appendChild(loadingProgressBar);
   modalContainer.appendChild(spinner);
@@ -431,9 +431,9 @@ function showLoadingOverlay(title, message) {
   modalContainer.appendChild(progressContainer);
   modalContainer.appendChild(loadingDetailsText);
   loadingOverlay.appendChild(modalContainer);
-  
+
   document.body.appendChild(loadingOverlay);
-  
+
   return loadingOverlay;
 }
 
@@ -442,7 +442,7 @@ function updateLoadingProgress(percent, detailText) {
   if (loadingProgressBar) {
     loadingProgressBar.style.width = `${percent}%`;
   }
-  
+
   if (loadingDetailsText && detailText) {
     loadingDetailsText.textContent = detailText;
   }
@@ -453,7 +453,7 @@ function hideLoadingOverlay() {
   if (loadingOverlay && loadingOverlay.parentNode) {
     loadingOverlay.style.opacity = "0";
     loadingOverlay.style.transition = "opacity 0.3s ease";
-    
+
     setTimeout(() => {
       if (loadingOverlay && loadingOverlay.parentNode) {
         loadingOverlay.parentNode.removeChild(loadingOverlay);
@@ -1117,7 +1117,9 @@ function _scheduleThumbUpdate() {
 
 // ── Season label canvas draw ──────────────────────────────
 function drawSeasonLabel() {
-  if (!seasonLabelEnabled || !seasonLabelText.trim() || activeSeasonNum === null) return;
+  if (!seasonLabelEnabled || !seasonLabelText.trim()) return;
+  // Skip base show posters (TV show loaded but no season selected)
+  if (seasonSuiteData && activeSeasonNum === null) return;
   const y = canvas.height * (seasonLabelYPct / 100);
   ctx.save();
   // Weight: Exo 2 is a regular-weight font, others are display/bold
@@ -1328,12 +1330,12 @@ mediuxInput.addEventListener(
 
 function searchMediux(query) {
   const currentMediaType = document.querySelector(".media-type-btn.active").dataset.type;
-  
-  const gqlQuery = currentMediaType === "movie" ? 
+
+  const gqlQuery = currentMediaType === "movie" ?
     `
     query {
       movies(
-        limit: 15, 
+        limit: 15,
         filter: {title: {_icontains: "${query}"}}
       ) {
         id
@@ -1358,11 +1360,11 @@ function searchMediux(query) {
         }
       }
     }
-    ` : 
+    ` :
     `
     query {
       shows(
-        limit: 15, 
+        limit: 15,
         filter: {title: {_icontains: "${query}"}}
       ) {
         id
@@ -1479,10 +1481,10 @@ function displayTMDBResultsForMediux(movies, type = "movie") {
     div.className = "search-result-item";
     const badge = document.createElement("span");
     badge.className = `type-badge ${type}`;
-    badge.innerHTML = type === "movie" ? 
-      `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>` : 
+    badge.innerHTML = type === "movie" ?
+      `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>` :
       `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M4 4h16v12H4z" fill="none" stroke="white" stroke-width="2"/><path d="M2 20h20M12 16v4" stroke="white" stroke-width="2"/></svg>`;
-    
+
     const year = movie.release_date ? movie.release_date.substring(0, 4) : "—";
     const tmdbBadge = document.createElement("span");
     tmdbBadge.style.marginLeft = "8px";
@@ -1559,7 +1561,7 @@ function lookupMediuxShowByTMDBId(tmdbId, title) {
 
 function lookupMediuxByTMDBId(tmdbId, title, type = "movie") {
   const isMovie = type === "movie";
-  const gqlQuery = isMovie ? 
+  const gqlQuery = isMovie ?
     `
     query {
       movies(
@@ -1575,7 +1577,7 @@ function lookupMediuxByTMDBId(tmdbId, title, type = "movie") {
         release_date
       }
     }
-    ` : 
+    ` :
     `
     query {
       shows(
@@ -1644,7 +1646,7 @@ function displayMediuxResults(items, type = "movie") {
     div.className = "search-result-item";
     const badge = document.createElement("span");
     badge.className = `type-badge ${type}`;
-    
+
     if (type === "movie") {
       badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M2 6h20v12H2z" fill="none" stroke="white" stroke-width="2"/><path d="M7 6v12M17 6v12" stroke="white" stroke-width="2"/></svg>`;
       const year = item.release_date ? item.release_date.substring(0, 4) : "—";
@@ -1652,7 +1654,7 @@ function displayMediuxResults(items, type = "movie") {
       const hasSetPosters = item.movie_sets && item.movie_sets.some((set) => set.files && set.files.length > 0);
       const hasCollection = item.collection_id && item.collection_id.id;
       div.textContent = `${item.title} (${year})`;
-      
+
       if (hasDirectPosters || hasSetPosters) {
         const posterBadge = document.createElement("span");
         posterBadge.style.marginLeft = "8px";
@@ -1688,7 +1690,7 @@ function displayMediuxResults(items, type = "movie") {
       const hasDirectPosters = item.posters && item.posters.length > 0;
       const hasSetPosters = item.show_sets && item.show_sets.some((set) => set.files && set.files.length > 0);
       div.textContent = `${item.title} (${year})`;
-      
+
       if (hasDirectPosters || hasSetPosters) {
         const posterBadge = document.createElement("span");
         posterBadge.style.marginLeft = "8px";
@@ -1719,7 +1721,7 @@ function displayMediuxResults(items, type = "movie") {
         const hasDirectPosters = item.posters && item.posters.length > 0;
         const hasSetPosters = item.movie_sets && item.movie_sets.some((set) => set.files && set.files.length > 0);
         const hasCollection = item.collection_id && item.collection_id.id;
-        
+
         if (hasDirectPosters || hasSetPosters || hasCollection) {
           fetchMoviePosters(item.id, item.title);
         } else {
@@ -1728,7 +1730,7 @@ function displayMediuxResults(items, type = "movie") {
       } else {
         const hasDirectPosters = item.posters && item.posters.length > 0;
         const hasSetPosters = item.show_sets && item.show_sets.some((set) => set.files && set.files.length > 0);
-        
+
         if (hasDirectPosters || hasSetPosters) {
           fetchShowPosters(item.id, item.title);
         } else {
@@ -1833,12 +1835,12 @@ function fetchMoviePosters(movieId, movieTitle) {
       }
 
       const movie = data.data.movies_by_id;
-      
+
       // Track unique file IDs to avoid duplicates - ADD THIS
       const processedFileIds = new Set();
       const allPosters = [];
       const posterPromises = [];
-      
+
       const directPosters = movie.files || [];
       console.log(`Found ${directPosters.length} direct posters`);
 
@@ -1847,10 +1849,10 @@ function fetchMoviePosters(movieId, movieTitle) {
         if (processedFileIds.has(file.id)) {
           return; // Skip duplicate IDs
         }
-        
+
         // Add to processed set - ADD THIS
         processedFileIds.add(file.id);
-        
+
         posterPromises.push(
           fetchAssetAsDataUrl(file.id)
             .then((dataUrl) => {
@@ -1879,10 +1881,10 @@ function fetchMoviePosters(movieId, movieTitle) {
           if (processedFileIds.has(file.id)) {
             return; // Skip duplicate IDs
           }
-          
+
           // Add to processed set - ADD THIS
           processedFileIds.add(file.id);
-          
+
           posterPromises.push(
             fetchAssetAsDataUrl(file.id)
               .then((dataUrl) => {
@@ -1905,22 +1907,22 @@ function fetchMoviePosters(movieId, movieTitle) {
       if (movie.collection_id) {
         const collectionPosters = movie.collection_id.files || [];
         console.log("Collection poster structure sample:", collectionPosters.length > 0 ? collectionPosters[0] : "No posters");
-        
+
         collectionPosters.forEach((file) => {
           // Skip any files that don't have movie_id - these are likely the collection posters
           if (!file.movie_id) {
             console.log("Skipping likely collection poster:", file.id);
             return;
           }
-          
+
           // Check for duplicates - ADD THIS
           if (processedFileIds.has(file.id)) {
             return; // Skip duplicate IDs
           }
-          
+
           // Add to processed set - ADD THIS
           processedFileIds.add(file.id);
-          
+
           posterPromises.push(
             fetchAssetAsDataUrl(file.id)
               .then((dataUrl) => {
@@ -1948,11 +1950,11 @@ function fetchMoviePosters(movieId, movieTitle) {
       }
 
       updateLoadingProgress(50, `Found ${posterPromises.length} posters. Downloading...`);
-      
+
       // Track progress for loading each poster
       let loadedCount = 0;
       const totalCount = posterPromises.length;
-      
+
       // Update the progress function to show loading progress
       const originalFetch = window.fetchAssetAsDataUrl;
       window.fetchAssetAsDataUrl = async function(fileId) {
@@ -1966,9 +1968,9 @@ function fetchMoviePosters(movieId, movieTitle) {
       Promise.allSettled(posterPromises).then((results) => {
         // Restore original function
         window.fetchAssetAsDataUrl = originalFetch;
-        
+
         updateLoadingProgress(95, "Processing complete!");
-        
+
         console.log(
           `Finished processing ${results.length} posters. Success: ${
             results.filter((r) => r.status === "fulfilled").length
@@ -1985,7 +1987,7 @@ function fetchMoviePosters(movieId, movieTitle) {
           }
         } else {
           updateLoadingProgress(100, `Found ${allPosters.length} posters!`);
-          
+
           // Hide loading overlay after a small delay to show completion
           setTimeout(() => {
             hideLoadingOverlay();
@@ -2094,12 +2096,12 @@ function fetchShowPosters(showId, showTitle) {
       }
 
       const show = data.data.shows_by_id;
-      
+
       // Track unique file IDs to avoid duplicates
       const processedFileIds = new Set();
       const allPosters = [];
       const posterPromises = [];
-      
+
       // Process direct posters
       const directPosters = show.files || [];
       console.log(`Found ${directPosters.length} direct posters`);
@@ -2108,7 +2110,7 @@ function fetchShowPosters(showId, showTitle) {
         if (processedFileIds.has(file.id)) {
           return; // Skip duplicate IDs
         }
-        
+
         processedFileIds.add(file.id);
         posterPromises.push(
           fetchAssetAsDataUrl(file.id)
@@ -2138,7 +2140,7 @@ function fetchShowPosters(showId, showTitle) {
           if (processedFileIds.has(file.id)) {
             return; // Skip duplicate IDs
           }
-          
+
           processedFileIds.add(file.id);
           posterPromises.push(
             fetchAssetAsDataUrl(file.id)
@@ -2167,11 +2169,11 @@ function fetchShowPosters(showId, showTitle) {
       }
 
       updateLoadingProgress(50, `Found ${posterPromises.length} posters. Downloading...`);
-      
+
       // Track progress for loading each poster
       let loadedCount = 0;
       const totalCount = posterPromises.length;
-      
+
       // Update the progress function to show loading progress
       const originalFetch = window.fetchAssetAsDataUrl;
       window.fetchAssetAsDataUrl = async function(fileId) {
@@ -2185,9 +2187,9 @@ function fetchShowPosters(showId, showTitle) {
       Promise.allSettled(posterPromises).then((results) => {
         // Restore original function
         window.fetchAssetAsDataUrl = originalFetch;
-        
+
         updateLoadingProgress(95, "Processing complete!");
-        
+
         console.log(
           `Finished processing ${results.length} posters. Success: ${
             results.filter((r) => r.status === "fulfilled").length
@@ -2204,7 +2206,7 @@ function fetchShowPosters(showId, showTitle) {
           }
         } else {
           updateLoadingProgress(100, `Found ${allPosters.length} posters!`);
-          
+
           // Hide loading overlay after a small delay to show completion
           setTimeout(() => {
             hideLoadingOverlay();
@@ -2842,7 +2844,7 @@ function displayTVShowMetadata(details) {
   if (details.networks && details.networks.length > 0) {
     const networkName = details.networks[0].name.toLowerCase();
     console.log(`Looking for network logo match for: ${networkName}`);
-    
+
     // First try for exact match
     let exactMatch = availableLogos.find((logo) => logo.name.toLowerCase() === networkName);
 
@@ -2892,7 +2894,7 @@ function displayTVShowMetadata(details) {
             break;
           }
         }
-        
+
         if (!matchFound) {
           console.log(`No logo match found for network: ${networkName}`);
         }
@@ -2962,6 +2964,10 @@ document.getElementById("reset-btn").addEventListener("click", () => {
   seasonSavedImages.clear();
   seasonLabelEnabled = false;
   seasonLabelText    = '';
+  seasonLabelFont    = 'Exo 2';
+  seasonLabelYPct    = 94.5;
+  seasonLabelFontSize = 34;
+  seasonLabelSpacing = 10;
   seasonLabelColor   = '#ffffff';
   const _ssp = document.getElementById('season-suite-panel');
   if (_ssp) _ssp.style.display = 'none';
@@ -2969,6 +2975,20 @@ document.getElementById("reset-btn").addEventListener("click", () => {
   if (_slt) { _slt.checked = false; _slt.dispatchEvent(new Event('change')); }
   const _sli = document.getElementById('season-label-text');
   if (_sli) _sli.value = '';
+  const _slf = document.getElementById('season-label-font');
+  if (_slf) _slf.value = 'Exo 2';
+  const _sly = document.getElementById('season-label-y');
+  if (_sly) _sly.value = '94.5';
+  const _slyv = document.getElementById('season-label-y-val');
+  if (_slyv) _slyv.textContent = '94.5%';
+  const _sls = document.getElementById('season-label-size');
+  if (_sls) _sls.value = '34';
+  const _slsv = document.getElementById('season-label-size-val');
+  if (_slsv) _slsv.textContent = '34px';
+  const _slsps = document.getElementById('season-label-spacing');
+  if (_slsps) _slsps.value = '10';
+  const _slspsv = document.getElementById('season-label-spacing-val');
+  if (_slspsv) _slspsv.textContent = '10px';
   if (seasonLabelColorPickr) seasonLabelColorPickr.setColor('#ffffff');
   // Reset gradient
   gradientEnabled = false; gradientOpacity = 0.7; gradientHeight = 50; gradientColor = '#000000';
@@ -2979,6 +2999,21 @@ document.getElementById("reset-btn").addEventListener("click", () => {
   const _gh  = document.getElementById('gradient-height');       if (_gh)  _gh.value = '50';
   const _ghv = document.getElementById('gradient-height-val');   if (_ghv) _ghv.textContent = '50%';
   if (gradientColorPickr) gradientColorPickr.setColor('#000000');
+  // Reset title logo defaults
+  designerShadowEnabled = true;
+  designerShadowBlur = 20;
+  const _dst = document.getElementById('designer-shadow-toggle');
+  if (_dst) _dst.checked = true;
+  const _dsg = document.getElementById('designer-shadow-group');
+  if (_dsg) _dsg.style.display = 'block';
+  const _dsb = document.getElementById('designer-shadow-blur');
+  if (_dsb) _dsb.value = '20';
+  const _dsbv = document.getElementById('designer-shadow-blur-display');
+  if (_dsbv) _dsbv.textContent = '20px';
+  // Reset guidelines default
+  guidelinesEnabled = false;
+  const _glt = document.getElementById('guidelines-toggle');
+  if (_glt) _glt.checked = false;
   // Reset designer logo color
   designerLogoColor = '#ffffff';
   if (designerLogoColorPickr) designerLogoColorPickr.setColor('#ffffff');
@@ -3324,14 +3359,14 @@ function setupMobileMenu() {
             btn.style.removeProperty("opacity");
             btn.style.removeProperty("filter");
           });
-          
+
           button.classList.add("active");
-          
+
           // Explicitly set the gradient background and ensure opacity is 1
           button.style.background = "linear-gradient(to right, #00bfa5, #8e24aa)";
           button.style.opacity = "1";
           button.style.filter = "none";
-          
+
           // Sync with desktop
           const type = button.dataset.type;
           const desktopButton = document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`);
@@ -3350,7 +3385,7 @@ function setupMobileMenu() {
         default: "#ffffff",
         swatches: false,
         useAsButton: false,
-        inline: false, 
+        inline: false,
         components: {
           preview: true,
           opacity: false,
@@ -3702,7 +3737,7 @@ document.addEventListener("click", (e) => {
   if (!e.target.closest(".tmdb-search")) {
     suggestionsBox.innerHTML = "";
   }
-  
+
   // New code to handle Mediux suggestions
   if (!e.target.closest(".mediux-search")) {
     mediuxSuggestions.innerHTML = "";
@@ -3719,22 +3754,22 @@ document.addEventListener("click", (e) => {
 // Initialize collapsible sections
 document.addEventListener('DOMContentLoaded', function() {
   const collapsibleSections = document.querySelectorAll('.collapsible-section');
-  
+
   collapsibleSections.forEach(section => {
     const header = section.querySelector('.collapsible-header');
     const content = section.querySelector('.collapsible-content');
-    
+
     // Add click event to toggle collapse
     header.addEventListener('click', () => {
       const isCollapsed = section.classList.toggle('collapsed');
-      
+
       if (isCollapsed) {
         content.style.maxHeight = '0';
       } else {
         content.style.maxHeight = content.scrollHeight + 'px';
       }
     });
-    
+
     // Set initial state (expanded)
     content.style.maxHeight = content.scrollHeight + 'px';
   });
@@ -3744,20 +3779,20 @@ document.getElementById("mobile-poster-upload").addEventListener("change", (e) =
   const file = e.target.files[0];
   if (file) {
     document.getElementById("mobile-file-name").textContent = file.name;
-    
+
     // Trigger the main poster upload to keep functionality in sync
     const mainPosterUpload = document.getElementById("poster-upload");
-    
+
     // Create a new FileList-like object
     const dataTransfer = new DataTransfer();
     dataTransfer.items.add(file);
-    
+
     // Set the files on the main upload input
     mainPosterUpload.files = dataTransfer.files;
-    
+
     // Trigger change event on the main upload input
     mainPosterUpload.dispatchEvent(new Event('change'));
-    
+
     // Close the mobile menu after file selection
     document.getElementById("mobile-menu-overlay").style.display = "none";
   }
@@ -3766,7 +3801,7 @@ document.getElementById("mobile-poster-upload").addEventListener("change", (e) =
 // Fix mobile content type buttons by directly manipulating DOM properties
 function fixMobileContentTypeButtons() {
   const mobileMediaTypeButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
-  
+
   if (mobileMediaTypeButtons) {
     mobileMediaTypeButtons.forEach((button) => {
       // Remove any existing click handlers
@@ -3780,7 +3815,7 @@ function fixMobileContentTypeButtons() {
 function handleMobileTypeButtonClick(event) {
   const clickedButton = event.currentTarget;
   const mobileMediaTypeButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
-  
+
   // Remove active class and reset styles for all buttons
   mobileMediaTypeButtons.forEach((btn) => {
     btn.classList.remove("active");
@@ -3788,13 +3823,13 @@ function handleMobileTypeButtonClick(event) {
     btn.style.opacity = "0.6";
     btn.style.filter = "grayscale(50%)";
   });
-  
+
   // Set active class and styles for clicked button
   clickedButton.classList.add("active");
   clickedButton.style.background = "linear-gradient(to right, #00bfa5, #8e24aa)";
   clickedButton.style.opacity = "1";
   clickedButton.style.filter = "none";
-  
+
   // Sync with desktop selection
   const type = clickedButton.dataset.type;
   const desktopButton = document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`);
@@ -3812,14 +3847,14 @@ document.addEventListener("DOMContentLoaded", () => {
 function initMobileContentTypeButtons() {
   const mobileMenuOverlay = document.getElementById("mobile-menu-overlay");
   const mobileMenuToggle = document.getElementById("sidebar-toggle");
-  
+
   if (mobileMenuToggle && mobileMenuOverlay) {
     // Add event listener to sidebar toggle to initialize buttons
     mobileMenuToggle.addEventListener("click", () => {
       // Find the currently active content type in the desktop UI
       const desktopActiveButton = document.querySelector(".sidebar .media-type-btn.active");
       const activeType = desktopActiveButton ? desktopActiveButton.dataset.type : "movie";
-      
+
       // Set up the mobile buttons based on the desktop active state
       const mobileButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
       mobileButtons.forEach(btn => {
@@ -3827,7 +3862,7 @@ function initMobileContentTypeButtons() {
         btn.style.removeProperty("background");
         btn.style.removeProperty("opacity");
         btn.style.removeProperty("filter");
-        
+
         if (btn.dataset.type === activeType) {
           btn.classList.add("active");
         } else {
@@ -3843,15 +3878,15 @@ document.addEventListener("click", (e) => {
   const button = e.target.closest(".mobile-tab-content .media-type-btn");
   if (button) {
     const mobileButtons = document.querySelectorAll(".mobile-tab-content .media-type-btn");
-    
+
     // Remove active class from all buttons
     mobileButtons.forEach(btn => {
       btn.classList.remove("active");
     });
-    
+
     // Add active class to clicked button
     button.classList.add("active");
-    
+
     // Sync with desktop buttons
     const type = button.dataset.type;
     const desktopButton = document.querySelector(`.sidebar .media-type-btn[data-type="${type}"]`);
@@ -4434,6 +4469,39 @@ function _syncDesignerSliders() {
   if (yDp) yDp.textContent = designerLogoY;
 }
 
+// ── Fanart.tv / TMDB helpers ──────────────────────────────
+async function getTvdbId(tmdbId) {
+  try {
+    const res  = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`);
+    const data = await res.json();
+    return data.tvdb_id || null;
+  } catch { return null; }
+}
+
+async function fetchFanartData(endpoint, id) {
+  if (!fanartApiKey) return null;
+  const url  = `https://webservice.fanart.tv/v3/${endpoint}/${id}?api_key=${fanartApiKey}`;
+  const data = await fetchJsonViaProxy(url, { skipDirect: true });
+  if (!data || data.status === 'error' || data['error message']) {
+    if (data) console.warn('[Fanart.tv] API error:', data['error message'] || data.status);
+    return null;
+  }
+  return data;
+}
+
+function mapFanartImages(data, imageKeys) {
+  if (!data) return [];
+  const results = [];
+  for (const key of imageKeys) {
+    (data[key] || []).forEach(item => results.push({
+      thumbUrl: `https://images.weserv.nl/?url=${item.url.replace('/fanart/', '/preview/').replace(/^https?:\/\//, '')}`,
+      fullUrl:  `https://images.weserv.nl/?url=${item.url.replace(/^https?:\/\//, '')}`,
+      source:   'Fanart.tv',
+    }));
+  }
+  return results;
+}
+
 // ── Logo fetch functions ──────────────────────────────────
 async function fetchTMDBLogos(tmdbId, mediaType) {
   try {
@@ -4451,48 +4519,20 @@ async function fetchTMDBLogos(tmdbId, mediaType) {
 }
 
 async function fetchFanartMovieLogos(tmdbId) {
-  if (!fanartApiKey) return [];
-  const apiUrl = `https://webservice.fanart.tv/v3/movies/${tmdbId}?api_key=${fanartApiKey}`;
-  const data = await fetchJsonViaProxy(apiUrl, { skipDirect: true });
-  if (!data) return [];
-  if (data.status === 'error' || data['error message']) {
-    console.warn('[Fanart.tv] API error:', data['error message'] || data.status);
-    return [];
-  }
-  const logos = [];
-  for (const arr of [data.hdmovieclearlogo, data.movielogo]) {
-    (arr || []).forEach(l => logos.push({
-      thumbUrl: `https://images.weserv.nl/?url=${l.url.replace('/fanart/', '/preview/').replace(/^https?:\/\//, '')}`,
-      fullUrl:  `https://images.weserv.nl/?url=${l.url.replace(/^https?:\/\//, '')}`,
-      source:   'Fanart.tv'
-    }));
-  }
-  return logos;
+  const data = await fetchFanartData('movies', tmdbId);
+  return mapFanartImages(data, ['hdmovielogo', 'movielogo']);
 }
 
 async function fetchFanartTVLogos(tmdbId) {
-  if (!fanartApiKey) return [];
-  try {
-    const extRes  = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`);
-    const extData = await extRes.json();
-    if (!extData.tvdb_id) { console.warn('[Fanart.tv] No TVDB id for TMDB id', tmdbId); return []; }
-    const apiUrl = `https://webservice.fanart.tv/v3/tv/${extData.tvdb_id}?api_key=${fanartApiKey}`;
-    const data = await fetchJsonViaProxy(apiUrl, { skipDirect: true });
-    if (!data) return [];
-    if (data.status === 'error' || data['error message']) {
-      console.warn('[Fanart.tv] API error:', data['error message'] || data.status);
-      return [];
-    }
-    const logos = [];
-    for (const arr of [data.hdtvlogo, data.clearlogo]) {
-      (arr || []).forEach(l => logos.push({
-        thumbUrl: `https://images.weserv.nl/?url=${l.url.replace('/fanart/', '/preview/').replace(/^https?:\/\//, '')}`,
-        fullUrl:  `https://images.weserv.nl/?url=${l.url.replace(/^https?:\/\//, '')}`,
-        source:   'Fanart.tv'
-      }));
-    }
-    return logos;
-  } catch (e) { console.warn('[Fanart.tv TV] Error:', e); return []; }
+  const tvdbId = await getTvdbId(tmdbId);
+  if (!tvdbId) return [];
+  const data = await fetchFanartData('tv', tvdbId);
+  return mapFanartImages(data, ['hdtvlogo', 'clearlogo']);
+}
+
+async function fetchFanartMoviePosters(tmdbId) {
+  const data = await fetchFanartData('movies', tmdbId);
+  return mapFanartImages(data, ['movieposter']);
 }
 
 // Fetch JSON through a chain of CORS proxies, returning parsed object or null.
@@ -4572,59 +4612,100 @@ async function fetchAndRenderPosterPicker(id, type) {
     'nl': 'Dutch', 'pl': 'Polish',
   };
 
-  // Priority order for tabs: Textless first, English second, rest alphabetically
+  // Priority order for TMDB tabs: Textless first, English second, rest alphabetically
   const TAB_ORDER = ['__textless__', 'en'];
 
   try {
-    const res  = await fetch(`https://api.themoviedb.org/3/${type}/${id}/images?api_key=${TMDB_API_KEY}`);
-    const data = await res.json();
-    const all  = data.posters || [];
-    if (!all.length) {
+    // Fetch TMDB and Fanart.tv posters in parallel
+    const [tmdbRes, fanartPosters] = await Promise.all([
+      fetch(`https://api.themoviedb.org/3/${type}/${id}/images?api_key=${TMDB_API_KEY}`).then(r => r.json()),
+      type === 'movie' ? fetchFanartMoviePosters(id) : getTvdbId(id).then(tvdbId => tvdbId ? fetchFanartData('tv', tvdbId).then(d => mapFanartImages(d, ['tvposter'])) : []),
+    ]);
+    const tmdbAll = tmdbRes.posters || [];
+
+    if (!tmdbAll.length && !fanartPosters.length) {
       if (grid) grid.innerHTML = '<div class="clearlogo-empty">No posters found</div>';
       return;
     }
 
-    // Group by language (null iso_639_1 = textless)
-    const groups = new Map();
-    for (const p of all) {
+    // Group TMDB posters by language (null iso_639_1 = textless)
+    const tmdbGroups = new Map();
+    for (const p of tmdbAll) {
       const key = p.iso_639_1 || '__textless__';
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(p);
+      if (!tmdbGroups.has(key)) tmdbGroups.set(key, []);
+      tmdbGroups.get(key).push({ thumbUrl: `https://image.tmdb.org/t/p/w185${p.file_path}`, fullUrl: `https://image.tmdb.org/t/p/w780${p.file_path}` });
     }
 
-    // Sort keys: Textless → English → others alphabetically
+    // Sort TMDB keys: Textless → English → others alphabetically
     const sortedKeys = [
-      ...TAB_ORDER.filter(k => groups.has(k)),
-      ...[...groups.keys()].filter(k => !TAB_ORDER.includes(k)).sort(),
+      ...TAB_ORDER.filter(k => tmdbGroups.has(k)),
+      ...[...tmdbGroups.keys()].filter(k => !TAB_ORDER.includes(k)).sort(),
     ];
 
-    // Default to first available tab
+    // Default to first available TMDB tab
     let activeKey = sortedKeys[0];
+
+    // Helper: build a poster grid item
+    function makePosterItem(p) {
+      const item = document.createElement('div');
+      item.className = 'poster-picker-item';
+      const img = document.createElement('img');
+      img.src     = p.thumbUrl;
+      img.loading = 'lazy';
+      img.alt     = '';
+      img.onerror = () => { item.style.display = 'none'; };
+      item.appendChild(img);
+      item.addEventListener('click', () => loadPosterFromPicker(p.fullUrl, id, type));
+      return item;
+    }
 
     function renderGrid(key) {
       activeKey = key;
       tabsEl.querySelectorAll('.poster-lang-tab').forEach(t =>
         t.classList.toggle('active', t.dataset.lang === key));
-      const posters = groups.get(key) || [];
       if (!grid) return;
       grid.innerHTML = '';
-      posters.forEach(p => {
-        const item = document.createElement('div');
-        item.className = 'poster-picker-item';
-        const img = document.createElement('img');
-        img.src     = `https://image.tmdb.org/t/p/w185${p.file_path}`;
-        img.loading = 'lazy';
-        img.alt     = '';
-        item.appendChild(img);
-        item.addEventListener('click', () =>
-          loadPosterFromPicker(`https://image.tmdb.org/t/p/w780${p.file_path}`, id, type));
-        grid.appendChild(item);
-      });
+
+      // TMDB section
+      const tmdbPosters = tmdbGroups.get(key) || [];
+      if (tmdbPosters.length) {
+        const section = document.createElement('div');
+        section.className = 'poster-picker-section';
+        const label = document.createElement('div');
+        label.className = 'poster-picker-section-label';
+        label.textContent = 'TMDB';
+        section.appendChild(label);
+        const inner = document.createElement('div');
+        inner.className = 'poster-picker-grid';
+        tmdbPosters.forEach(p => inner.appendChild(makePosterItem(p)));
+        section.appendChild(inner);
+        grid.appendChild(section);
+      }
+
+      // Fanart.tv section (always shown below TMDB, regardless of active tab)
+      if (fanartPosters.length) {
+        const section = document.createElement('div');
+        section.className = 'poster-picker-section';
+        const label = document.createElement('div');
+        label.className = 'poster-picker-section-label';
+        label.textContent = `Fanart.tv (${fanartPosters.length})`;
+        section.appendChild(label);
+        const inner = document.createElement('div');
+        inner.className = 'poster-picker-grid';
+        fanartPosters.forEach(p => inner.appendChild(makePosterItem(p)));
+        section.appendChild(inner);
+        grid.appendChild(section);
+      } else if (!fanartApiKey) {
+        const hint = document.createElement('div');
+        hint.className = 'poster-picker-section';
+        hint.innerHTML = '<div class="clearlogo-fanart-hint">🔑 Add a Fanart.tv key in Settings for more posters</div>';
+        grid.appendChild(hint);
+      }
     }
 
-    // Build tab pills in sorted order
+    // Build TMDB tab pills
     for (const lang of sortedKeys) {
-      const items = groups.get(lang);
+      const items = tmdbGroups.get(lang);
       const btn = document.createElement('button');
       btn.className  = 'poster-lang-tab' + (lang === activeKey ? ' active' : '');
       btn.dataset.lang = lang;
@@ -5207,7 +5288,8 @@ window._embyRefreshSeasonSuiteBadges = function () {
 function loadSeasonPoster(seasonNum, posterPath, seasonName) {
   if (!posterPath) { showToast('No poster available for this season'); return; }
 
-  const posterUrl = `https://image.tmdb.org/t/p/w780${posterPath}`;
+  // Support both TMDB file paths and full URLs (e.g. from Fanart.tv)
+  const posterUrl = posterPath.startsWith('http') ? posterPath : `https://image.tmdb.org/t/p/w780${posterPath}`;
 
   // Ensure active highlight is correct
   activeSeasonNum = seasonNum;
@@ -5299,8 +5381,7 @@ async function fetchAndRenderSeasonPosterPicker(showId, seasonNum, seasonName) {
   if (tabsEl) tabsEl.innerHTML = '';
 
   try {
-    // Fetch season-specific images AND show-level images in parallel
-    // No include_image_language filter — fetch all, then filter client-side for consistency
+    // Fetch TMDB season + show images in parallel
     const [seasonRes, showRes] = await Promise.all([
       fetch(`https://api.themoviedb.org/3/tv/${showId}/season/${seasonNum}/images?api_key=${TMDB_API_KEY}`),
       fetch(`https://api.themoviedb.org/3/tv/${showId}/images?api_key=${TMDB_API_KEY}`),
@@ -5316,14 +5397,15 @@ async function fetchAndRenderSeasonPosterPicker(showId, seasonNum, seasonName) {
     const showOnlyTextless = showTextless.filter(p => !seasonPaths.has(p.file_path));
 
     if (!seasonTextless.length && !showOnlyTextless.length) {
-      if (grid) grid.innerHTML = '<div class="clearlogo-empty">No textless posters found</div>';
+      if (grid) grid.innerHTML = '<div class="clearlogo-empty">No posters found</div>';
       return;
     }
 
     if (!grid) return;
     grid.innerHTML = '';
 
-    function buildPickerSection(posters, label) {
+    // Build a TMDB section from file_path-based posters
+    function buildTmdbSection(posters, label) {
       if (!posters.length) return;
       const section = document.createElement('div');
       section.className = 'poster-picker-section';
@@ -5351,8 +5433,8 @@ async function fetchAndRenderSeasonPosterPicker(showId, seasonNum, seasonName) {
       grid.appendChild(section);
     }
 
-    buildPickerSection(seasonTextless, `${seasonName} — Textless`);
-    buildPickerSection(showOnlyTextless, 'Show — Textless');
+    buildTmdbSection(seasonTextless, `${seasonName} — Textless`);
+    buildTmdbSection(showOnlyTextless, 'Show — Textless');
   } catch (e) {
     if (grid) grid.innerHTML = '<div class="clearlogo-empty">Failed to load season posters</div>';
     console.error('[SeasonPosterPicker]', e);
@@ -5723,18 +5805,18 @@ function setupResetButton() {
 
   const handleReset = (event) => {
     event.preventDefault();
-    
+
     // Show the reset confirmation overlay
     const confirmOverlay = document.getElementById("custom-confirm-overlay");
     confirmOverlay.style.display = "flex";
-    
+
     // Setup confirmation button handlers (one-shot to avoid accumulating listeners)
     document.getElementById("confirmYes").addEventListener("click", function() {
       confirmOverlay.style.display = "none";
-      
+
       // Clear the canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       // Reset upload status
       hideMetadataPanel();
       resetCanvasState();
@@ -5743,7 +5825,7 @@ function setupResetButton() {
       if (guidelinesEnabled && guidelinesImage.complete && guidelinesImage.naturalWidth > 0) {
         drawGuidelinesBackdrop();
       }
-      
+
       // Reset UI elements
       document.getElementById("network-logo-checkbox").checked = false;
       document.getElementById("overlay-select").value = "none";
@@ -5755,12 +5837,12 @@ function setupResetButton() {
       }
 
       networkLogoImage = null;
-      
+
       // Clear search inputs
       document.getElementById("tmdb-search-input").value = "";
       document.getElementById("mediux-search-input").value = "";
       document.getElementById("network-logo-search").value = "";
-      
+
       if (document.getElementById("mobile-tmdb-search")) {
         document.getElementById("mobile-tmdb-search").value = "";
       }
@@ -5778,7 +5860,7 @@ function setupResetButton() {
       // Display a message
       showToast("Reset complete");
     }, { once: true });
-    
+
     document.getElementById("confirmNo").addEventListener("click", function() {
       confirmOverlay.style.display = "none";
     }, { once: true });
@@ -5818,11 +5900,11 @@ function setupResetButton() {
   }
 
   resetBtn.addEventListener("click", handleReset);
-  
+
   if (mobileResetBtn) {
     mobileResetBtn.addEventListener("click", handleReset);
   }
-  
+
   if (mobileCanvasResetBtn) {
     mobileCanvasResetBtn.addEventListener("click", handleReset);
   }
@@ -5859,7 +5941,7 @@ function resetCanvasState() {
 
   // Reset file input
   posterUpload.value = "";
-  
+
   // Hide metadata panel
   hideMetadataPanel();
 }
